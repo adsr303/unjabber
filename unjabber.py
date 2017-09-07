@@ -68,6 +68,16 @@ class Message:
     def shortname(self):
         return self.who[:self.who.find('@')]
 
+    def after(self, other):
+        day = self.day if self.day != other.day else None
+        if self.who == other.who:
+            hour = self.hour if self.hour != other.hour else None
+            shortname = self.shortname if day or hour else None
+        else:
+            hour = self.hour
+            shortname = self.shortname
+        return day, hour, shortname
+
 
 PEOPLE = """
 SELECT jid FROM history_participant

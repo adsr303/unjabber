@@ -26,6 +26,49 @@ class TestMessage(unittest.TestCase):
         self.assertEqual(m.hour, '14:32')
         self.assertEqual(m.shortname, 'johnny.b.goode')
 
+    def test_after_same_user_other_day(self):
+        m1 = Message(datetime(2017, 9, 4, 12, 1), 'chuck.berry@guitar.info',
+                     'Sing la la la')
+        m2 = Message(datetime(2017, 9, 6, 9, 12), 'chuck.berry@guitar.info',
+                     'Play more')
+        self.assertEqual(m2.after(m1), ('2017-09-06', '09:12', 'chuck.berry'))
+
+    def test_after_same_user_same_day(self):
+        m1 = Message(datetime(2017, 9, 4, 12, 1), 'chuck.berry@guitar.info',
+                     'Sing la la la')
+        m2 = Message(datetime(2017, 9, 4, 12, 3), 'chuck.berry@guitar.info',
+                     'Play more')
+        self.assertEqual(m2.after(m1), (None, '12:03', 'chuck.berry'))
+
+    def test_after_same_user_same_hour(self):
+        m1 = Message(datetime(2017, 9, 4, 12, 1), 'chuck.berry@guitar.info',
+                     'Sing la la la')
+        m2 = Message(datetime(2017, 9, 4, 12, 1), 'chuck.berry@guitar.info',
+                     'Play more')
+        self.assertEqual(m2.after(m1), (None, None, None))
+
+    def test_after_different_user_other_day(self):
+        m1 = Message(datetime(2017, 9, 4, 12, 1), 'chuck.berry@guitar.info',
+                     'Sing la la la')
+        m2 = Message(datetime(2017, 9, 6, 9, 12),
+                     'johnny.b.goode@rocknroll.com', 'Play more')
+        self.assertEqual(m2.after(m1),
+                         ('2017-09-06', '09:12', 'johnny.b.goode'))
+
+    def test_after_different_user_same_day(self):
+        m1 = Message(datetime(2017, 9, 4, 12, 1), 'chuck.berry@guitar.info',
+                     'Sing la la la')
+        m2 = Message(datetime(2017, 9, 4, 12, 3),
+                     'johnny.b.goode@rocknroll.com', 'Play more')
+        self.assertEqual(m2.after(m1), (None, '12:03', 'johnny.b.goode'))
+
+    def test_after_different_user_same_hour(self):
+        m1 = Message(datetime(2017, 9, 4, 12, 1), 'chuck.berry@guitar.info',
+                     'Sing la la la')
+        m2 = Message(datetime(2017, 9, 4, 12, 1),
+                     'johnny.b.goode@rocknroll.com', 'Play more')
+        self.assertEqual(m2.after(m1), (None, '12:01', 'johnny.b.goode'))
+
 
 if __name__ == '__main__':
     unittest.main()
