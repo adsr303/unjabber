@@ -37,6 +37,38 @@ def parse_payload(payload):
     return p.text
 
 
+class Message:
+    @classmethod
+    def from_database(cls, when, who, what):
+        return cls(datetime.fromtimestamp(when // 1_000_000), who,
+                   parse_payload(what))
+
+    def __init__(self, when, who, what):
+        self.when = when
+        self.who = who
+        self.what = what
+
+    def __str__(self):
+        return '{} {} {}'.format(self.when, self.who, self.what)
+
+    def __repr__(self):
+        return '{}({}, {}, {})'.format(
+            self.__class__.__name__,
+            *(repr(x) for x in [self.when, self.who, self.what]))
+
+    @property
+    def day(self):
+        return str(self.when)[:10]
+
+    @property
+    def hour(self):
+        return str(self.when)[11:16]
+
+    @property
+    def shortname(self):
+        return self.who[:self.who.find('@')]
+
+
 PEOPLE = """
 SELECT jid FROM history_participant
 WHERE islocal = 0 AND number = '' AND phonetype = 0
@@ -50,7 +82,7 @@ GROUP BY jid
 """
 
 MESSAGES = """
-SELECT payload, date, sender FROM history_message
+SELECT date, sender, payload FROM history_message
 WHERE item IN (SELECT item FROM history_participant WHERE jid LIKE ?)
 ORDER BY id
 """
@@ -73,9 +105,8 @@ class Unjabber(cmd.Cmd):
         """Show conversations with people matching name (or part of)."""
         with self.cursor() as cur:
             cur.execute(MESSAGES, (like_arg(arg),))
-            for what, when, who in cur:
-                print(datetime.fromtimestamp(when//1_000_000), who,
-                      parse_payload(what))
+            for row in cur:
+                print(Message.from_database(*row))
 
     def do_quit(self, arg):
         """Exit the program."""
