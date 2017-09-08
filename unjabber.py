@@ -5,6 +5,7 @@ import cmd
 from contextlib import closing
 from datetime import datetime
 from html.parser import HTMLParser
+from itertools import zip_longest
 import io
 import sqlite3
 import sys
@@ -21,6 +22,12 @@ class PayloadParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == 'img':
             self.stream.write(dict(attrs)['title'])
+
+    def handle_startendtag(self, tag, attrs):
+        if tag == 'br':
+            self.stream.write('\n')
+        else:
+            super().handle_startendtag(tag, attrs)
 
     def handle_data(self, data):
         self.stream.write(data)
@@ -151,12 +158,21 @@ def like_arg(arg):
 def print_message(previous, message):
     day, hour, shortname = message.after(previous)
     if day:
+        if previous:
+            print()
         print('==', day, '==')
     if shortname:
-        print(hour, '>', shortname)
-        print(5*' ', message.what)
+        if not day:
+            print()
+        print(hour, ' -- ', shortname)
+        sub_print_message(5*' ', message.what)
     else:
-        print(hour if hour else 5*' ', message.what)
+        sub_print_message(hour if hour else 5*' ', message.what)
+
+
+def sub_print_message(hour, what):
+    for h, line in zip_longest([hour], what.split('\n'), fillvalue=5*' '):
+        print(h, line)
 
 
 def payload_match(text, payload):
