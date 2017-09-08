@@ -69,6 +69,8 @@ class Message:
         return self.who[:self.who.find('@')]
 
     def after(self, other):
+        if not other:
+            return self.day, self.hour, self.shortname
         day = self.day if self.day != other.day else None
         if self.who == other.who:
             hour = self.hour if self.hour != other.hour else None
@@ -97,6 +99,11 @@ WHERE item IN (SELECT item FROM history_participant WHERE jid LIKE ?)
 ORDER BY id
 """
 
+MESSAGES_LIKE = """
+SELECT date, sender, payload FROM history_message
+WHERE payload LIKE ? ORDER BY id
+"""
+
 
 class Unjabber(cmd.Cmd):
     def __init__(self, dbconnection, **cmdargs):
@@ -113,8 +120,15 @@ class Unjabber(cmd.Cmd):
 
     def do_show(self, arg):
         """Show conversations with people matching name (or part of)."""
+        self._do_match(MESSAGES, arg)
+
+    def do_grep(self, arg):
+        """Show messages containing text."""
+        self._do_match(MESSAGES_LIKE, arg)
+
+    def _do_match(self, query, arg):
         with self.cursor() as cur:
-            cur.execute(MESSAGES, (like_arg(arg),))
+            cur.execute(query, (like_arg(arg),))
             for row in cur:
                 print(Message.from_database(*row))
 

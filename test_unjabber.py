@@ -69,6 +69,12 @@ class TestMessage(unittest.TestCase):
                      'johnny.b.goode@rocknroll.com', 'Play more')
         self.assertEqual(m2.after(m1), (None, '12:01', 'johnny.b.goode'))
 
+    def test_after_none(self):
+        m2 = Message(datetime(2017, 9, 4, 12, 1),
+                     'johnny.b.goode@rocknroll.com', 'Play more')
+        self.assertEqual(m2.after(None),
+                         ('2017-09-04', '12:01', 'johnny.b.goode'))
+
 
 if __name__ == '__main__':
     unittest.main()
