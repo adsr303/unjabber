@@ -74,7 +74,7 @@ class Message:
         day = self.day if self.day != other.day else None
         if self.who == other.who:
             hour = self.hour if self.hour != other.hour else None
-            shortname = self.shortname if day or hour else None
+            shortname = self.shortname if day else None
         else:
             hour = self.hour
             shortname = self.shortname
@@ -123,8 +123,11 @@ class Unjabber(cmd.Cmd):
         """Show conversations with people matching name (or part of)."""
         with self.cursor() as cur:
             cur.execute(MESSAGES, (like_arg(arg),))
+            previous = None
             for row in cur:
-                print(Message.from_database(*row))
+                message = Message.from_database(*row)
+                print_message(previous, message)
+                previous = message
 
     def do_grep(self, arg):
         """Show messages containing text."""
@@ -143,6 +146,17 @@ class Unjabber(cmd.Cmd):
 
 def like_arg(arg):
     return '%{}%'.format(arg)
+
+
+def print_message(previous, message):
+    day, hour, shortname = message.after(previous)
+    if day:
+        print('==', day, '==')
+    if shortname:
+        print(hour, '>', shortname)
+        print(5*' ', message.what)
+    else:
+        print(hour if hour else 5*' ', message.what)
 
 
 def payload_match(text, payload):

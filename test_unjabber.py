@@ -38,7 +38,7 @@ class TestMessage(unittest.TestCase):
                      'Sing la la la')
         m2 = Message(datetime(2017, 9, 4, 12, 3), 'chuck.berry@guitar.info',
                      'Play more')
-        self.assertEqual(m2.after(m1), (None, '12:03', 'chuck.berry'))
+        self.assertEqual(m2.after(m1), (None, '12:03', None))
 
     def test_after_same_user_same_hour(self):
         m1 = Message(datetime(2017, 9, 4, 12, 1), 'chuck.berry@guitar.info',
