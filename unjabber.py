@@ -101,7 +101,7 @@ ORDER BY id
 
 MESSAGES_LIKE = """
 SELECT date, sender, payload FROM history_message
-WHERE payload LIKE ? ORDER BY id
+WHERE payload MATCH ? ORDER BY id
 """
 
 
@@ -109,6 +109,7 @@ class Unjabber(cmd.Cmd):
     def __init__(self, dbconnection, **cmdargs):
         super().__init__(**cmdargs)
         self.connection = dbconnection
+        self.connection.create_function('match', 2, payload_match)
 
     def do_who(self, arg):
         """Show list of people. Add part of a name to narrow down."""
@@ -120,15 +121,15 @@ class Unjabber(cmd.Cmd):
 
     def do_show(self, arg):
         """Show conversations with people matching name (or part of)."""
-        self._do_match(MESSAGES, arg)
+        with self.cursor() as cur:
+            cur.execute(MESSAGES, (like_arg(arg),))
+            for row in cur:
+                print(Message.from_database(*row))
 
     def do_grep(self, arg):
         """Show messages containing text."""
-        self._do_match(MESSAGES_LIKE, arg)
-
-    def _do_match(self, query, arg):
         with self.cursor() as cur:
-            cur.execute(query, (like_arg(arg),))
+            cur.execute(MESSAGES_LIKE, (arg,))
             for row in cur:
                 print(Message.from_database(*row))
 
@@ -142,6 +143,11 @@ class Unjabber(cmd.Cmd):
 
 def like_arg(arg):
     return '%{}%'.format(arg)
+
+
+def payload_match(text, payload):
+    p = parse_payload(payload)
+    return text.lower() in p.lower()
 
 
 if __name__ == '__main__':
