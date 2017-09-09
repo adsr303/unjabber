@@ -2,90 +2,17 @@
 
 import argparse
 import cmd
-from contextlib import closing
-from datetime import datetime
-from html.parser import HTMLParser
-from itertools import zip_longest
-import io
 import sqlite3
-import sys
+from datetime import datetime
+from itertools import zip_longest
+
+from unjabberlib.messages import Message
+from unjabberlib.payloads import parse_payload
 
 
-class PayloadParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.stream = io.StringIO()
-
-    def error(self, message):
-        print(message, file=sys.stderr)
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'img':
-            self.stream.write(dict(attrs)['title'])
-
-    def handle_startendtag(self, tag, attrs):
-        if tag == 'br':
-            self.stream.write('\n')
-        else:
-            super().handle_startendtag(tag, attrs)
-
-    def handle_data(self, data):
-        self.stream.write(data)
-
-    @property
-    def text(self):
-        return self.stream.getvalue()
-
-
-def parse_payload(payload):
-    p = PayloadParser()
-    p.feed(payload)
-    p.close()
-    return p.text
-
-
-class Message:
-    @classmethod
-    def from_database(cls, when, who, what):
-        return cls(datetime.fromtimestamp(when // 1_000_000), who,
+def make_message_from_db(when, who, what):
+    return Message(datetime.fromtimestamp(when // 1_000_000), who,
                    parse_payload(what))
-
-    def __init__(self, when, who, what):
-        self.when = when
-        self.who = who
-        self.what = what
-
-    def __str__(self):
-        return '{} {} {}'.format(self.when, self.who, self.what)
-
-    def __repr__(self):
-        return '{}({}, {}, {})'.format(
-            self.__class__.__name__,
-            *(repr(x) for x in [self.when, self.who, self.what]))
-
-    @property
-    def day(self):
-        return str(self.when)[:10]
-
-    @property
-    def hour(self):
-        return str(self.when)[11:16]
-
-    @property
-    def shortname(self):
-        return self.who[:self.who.find('@')]
-
-    def after(self, other):
-        if not other:
-            return self.day, self.hour, self.shortname
-        day = self.day if self.day != other.day else None
-        if self.who == other.who:
-            hour = self.hour if self.hour != other.hour else None
-            shortname = self.shortname if day else None
-        else:
-            hour = self.hour
-            shortname = self.shortname
-        return day, hour, shortname
 
 
 PEOPLE = """
@@ -128,14 +55,14 @@ class Unjabber(cmd.Cmd):
         """Show conversations with people matching name (or part of)."""
         previous = None
         for row in self.connection.execute(MESSAGES, (like_arg(arg),)):
-            message = Message.from_database(*row)
+            message = make_message_from_db(*row)
             print_message(previous, message)
             previous = message
 
     def do_grep(self, arg):
         """Show messages containing text."""
         for row in self.connection.execute(MESSAGES_LIKE, (arg,)):
-            print(Message.from_database(*row))
+            print(make_message_from_db(*row))
 
     def do_quit(self, arg):
         """Exit the program."""
