@@ -9,9 +9,9 @@ from unjabberlib.queries import Queries
 
 
 class Unjabber(cmd.Cmd):
-    def __init__(self, dbconnection, **cmdargs):
+    def __init__(self, queries, **cmdargs):
         super().__init__(**cmdargs)
-        self.queries = Queries(dbconnection)
+        self.queries = queries
 
     def do_who(self, arg):
         """Show list of people. Add part of a name to narrow down."""
@@ -61,4 +61,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with sqlite3.connect(args.database) as con:
-        Unjabber(con).cmdloop()
+        Unjabber(Queries(con)).cmdloop()
