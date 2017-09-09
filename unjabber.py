@@ -121,34 +121,25 @@ class Unjabber(cmd.Cmd):
     def do_who(self, arg):
         """Show list of people. Add part of a name to narrow down."""
         query = (PEOPLE_LIKE, (like_arg(arg),)) if arg else (PEOPLE,)
-        with self.cursor() as cur:
-            cur.execute(*query)
-            for row in cur:
-                print(row[0])
+        for row in self.connection.execute(*query):
+            print(row[0])
 
     def do_show(self, arg):
         """Show conversations with people matching name (or part of)."""
-        with self.cursor() as cur:
-            cur.execute(MESSAGES, (like_arg(arg),))
-            previous = None
-            for row in cur:
-                message = Message.from_database(*row)
-                print_message(previous, message)
-                previous = message
+        previous = None
+        for row in self.connection.execute(MESSAGES, (like_arg(arg),)):
+            message = Message.from_database(*row)
+            print_message(previous, message)
+            previous = message
 
     def do_grep(self, arg):
         """Show messages containing text."""
-        with self.cursor() as cur:
-            cur.execute(MESSAGES_LIKE, (arg,))
-            for row in cur:
-                print(Message.from_database(*row))
+        for row in self.connection.execute(MESSAGES_LIKE, (arg,)):
+            print(Message.from_database(*row))
 
     def do_quit(self, arg):
         """Exit the program."""
         return True
-
-    def cursor(self):
-        return closing(self.connection.cursor())
 
 
 def like_arg(arg):
