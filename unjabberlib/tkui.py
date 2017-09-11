@@ -13,7 +13,25 @@ class UnjabberTk(Tk):
         self.text.pack()
 
     def who(self):
-        self.text.delete(1.0, END)
-        for message in self.queries.messages_for_whom(self.who_var.get()):
-            self.text.insert(END, str(message))
+        self.text.delete('1.0', END)
+        column = 0
+        row = 1
+        messages = self.queries.messages_for_whom(self.who_var.get())
+        for index, message in enumerate(messages):
+            when = str(message.when)
+            self.text.insert(END, when)
+            self.text.insert(END, ' ')
+            self.text.insert(END, message.shortname)
+            tag_name = 'when{}'.format(index)
+            self.text.tag_add(tag_name, position(row, column),
+                              position(row, column + len(when)))
+            self.text.tag_configure(tag_name, foreground='blue')
             self.text.insert(END, '\n')
+            row += 1
+            self.text.insert(END, message.what)
+            self.text.insert(END, '\n')
+            row += 1
+
+
+def position(row, column):
+    return '{}.{}'.format(row, column)
