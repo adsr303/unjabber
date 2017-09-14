@@ -1,3 +1,4 @@
+from functools import partial
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
 
@@ -18,27 +19,28 @@ class UnjabberTk(Tk):
 
     def who(self):
         self.text.delete('1.0', END)
-        self.text.tag_configure('day', foreground='red')
+        self.text.tag_configure('day', foreground='red', justify='center')
         self.text.tag_configure('hour', foreground='blue')
         self.text.tag_configure('shortname', foreground='green')
+        append = partial(self.text.insert, END)
         previous = None
         for message in self.queries.messages_for_whom(self.who_var.get()):
             day, hour, shortname = message.after(previous)
             if day:
                 if previous:
-                    self.text.insert(END, '\n')
-                self.text.insert(END, day, 'day')
-                self.text.insert(END, '\n')
+                    append('\n')
+                append(day, 'day')
+                append('\n')
             if hour:
-                self.text.insert(END, hour, 'hour')
+                append(hour, 'hour')
             else:
-                self.text.insert(END, INDENT)
-            self.text.insert(END, ' ')
+                append(INDENT)
+            append(' ')
             if shortname:
-                self.text.insert(END, shortname, 'shortname')
-                self.text.insert(END, '\n')
-                self.text.insert(END, INDENT)
-                self.text.insert(END, ' ')
-            self.text.insert(END, message.what)
-            self.text.insert(END, '\n')
+                append(shortname, 'shortname')
+                append('\n')
+                append(INDENT)
+                append(' ')
+            append(message.what)
+            append('\n')
             previous = message
