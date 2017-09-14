@@ -1,8 +1,20 @@
-from functools import partial
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
 
-INDENT = 5 * ' '
+from unjabberlib import formatters
+
+
+class ScrolledTextFormatter(formatters.Formatter):
+    def __init__(self, scrolled_text):
+        super().__init__()
+        self.text = scrolled_text
+        self.text.tag_configure(formatters.DAY, foreground='red',
+                                justify='center')
+        self.text.tag_configure(formatters.HOUR, foreground='blue')
+        self.text.tag_configure(formatters.NAME, foreground='green')
+
+    def append(self, text, format=None):
+        self.text.insert(END, text, format)
 
 
 class UnjabberTk(Tk):
@@ -16,31 +28,12 @@ class UnjabberTk(Tk):
         w.pack()
         self.text = ScrolledText(self)
         self.text.pack(expand=True, fill=BOTH)
+        self.formatter = ScrolledTextFormatter(self.text)
 
     def who(self):
         self.text.delete('1.0', END)
-        self.text.tag_configure('day', foreground='red', justify='center')
-        self.text.tag_configure('hour', foreground='blue')
-        self.text.tag_configure('shortname', foreground='green')
-        append = partial(self.text.insert, END)
         previous = None
         for message in self.queries.messages_for_whom(self.who_var.get()):
-            day, hour, shortname = message.after(previous)
-            if day:
-                if previous:
-                    append('\n')
-                append(day, 'day')
-                append('\n')
-            if hour:
-                append(hour, 'hour')
-            else:
-                append(INDENT)
-            append(' ')
-            if shortname:
-                append(shortname, 'shortname')
-                append('\n')
-                append(INDENT)
-                append(' ')
-            append(message.what)
-            append('\n')
+            day, hour, name = message.after(previous)
+            self.formatter.show(previous, day, hour, name, message.what)
             previous = message
