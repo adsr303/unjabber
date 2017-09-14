@@ -8,7 +8,7 @@ class PlainBufferFormatter(Formatter):
         super().__init__()
         self.buffer = buffer
 
-    def append(self, text, format=None):
+    def append(self, text, tag=None):
         self.buffer.write(text)
 
 

@@ -13,8 +13,8 @@ class ScrolledTextFormatter(formatters.Formatter):
         self.text.tag_configure(formatters.HOUR, foreground='blue')
         self.text.tag_configure(formatters.NAME, foreground='green')
 
-    def append(self, text, format=None):
-        self.text.insert(END, text, format)
+    def append(self, text, tag=None):
+        self.text.insert(END, text, tag)
 
 
 class UnjabberTk(Tk):

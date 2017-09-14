@@ -7,12 +7,12 @@ trim_print = partial(print, sep='', end='')
 
 
 class StdoutFormatter(formatters.Formatter):
-    def append(self, text, format=None):
-        if format is None or format == formatters.HOUR:
+    def append(self, text, tag=None):
+        if tag is None or tag == formatters.HOUR:
             trim_print(text)
-        elif format == formatters.NAME:
+        elif tag == formatters.NAME:
             trim_print(' --  ', text)
-        elif format == formatters.DAY:
+        elif tag == formatters.DAY:
             trim_print('== ', text, ' ==')
 
 
@@ -31,8 +31,8 @@ class UnjabberCmd(cmd.Cmd):
         """Show conversations with people matching name (or part of)."""
         previous = None
         for message in self.queries.messages_for_whom(arg):
-            day, hour, shortname = message.after(previous)
-            self.formatter.show(previous, day, hour, shortname, message.what)
+            day, hour, name = message.after(previous)
+            self.formatter.show(previous, day, hour, name, message.what)
             previous = message
 
     def do_grep(self, arg):

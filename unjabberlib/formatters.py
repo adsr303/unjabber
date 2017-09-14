@@ -9,7 +9,7 @@ class Formatter:
     def __init__(self, indent=5 * ' '):
         self.indent = indent
 
-    def append(self, text, format=None):
+    def append(self, text, tag=None):
         raise NotImplementedError('Must override append() in derived class')
 
     def println(self, *args):
