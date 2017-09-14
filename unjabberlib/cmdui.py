@@ -1,6 +1,8 @@
 import cmd
 from itertools import zip_longest
 
+INDENT = 5 * ' '
+
 
 class UnjabberCmd(cmd.Cmd):
     def __init__(self, queries, **cmdargs):
@@ -39,11 +41,11 @@ def print_message(previous, message):
         if not day:
             print()
         print(hour, ' -- ', shortname)
-        sub_print_message(5 * ' ', message.what)
+        sub_print_message(INDENT, message.what)
     else:
-        sub_print_message(hour if hour else 5 * ' ', message.what)
+        sub_print_message(hour if hour else INDENT, message.what)
 
 
 def sub_print_message(hour, what):
-    for h, line in zip_longest([hour], what.split('\n'), fillvalue=5 * ' '):
+    for h, line in zip_longest([hour], what.split('\n'), fillvalue=INDENT):
         print(h, line)

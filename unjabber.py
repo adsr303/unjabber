@@ -17,6 +17,7 @@ if __name__ == '__main__':
     with sqlite3.connect(args.database) as con:
         queries = Queries(con)
         if args.graphical:
-            UnjabberTk(queries).mainloop()
+            title = 'Unjabber - ' + args.database
+            UnjabberTk(queries, title=title).mainloop()
         else:
             UnjabberCmd(queries).cmdloop()
