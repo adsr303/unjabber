@@ -19,7 +19,7 @@ class Formatter:
                 self.append(sep)
             else:
                 sep = ' '
-            if issubclass(a, str):
+            if isinstance(a, str):
                 self.append(a)
             else:
                 self.append(*a)
