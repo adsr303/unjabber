@@ -22,10 +22,21 @@ class UnjabberTk(Tk):
         super().__init__(*args, **kwargs)
         self.title(title)
         self.queries = queries
+
+        top_frame = Frame(self)
+        top_frame.pack(fill=X)
+
+        self.who_narrow_var = StringVar(self)
+        self.who_narrow_var.trace_add('write', lambda *_: self.narrow_who())
+        e = Entry(top_frame, textvariable=self.who_narrow_var)
+        e.pack(side=LEFT)
+
         self.who_var = StringVar(self)
         self.who_var.trace_add('write', lambda *_: self.who())
-        w = OptionMenu(self, self.who_var, *self.queries.who(None))
-        w.pack()
+        self.who_menu = OptionMenu(top_frame, self.who_var,
+                                   *self.queries.who(None))
+        self.who_menu.pack(side=LEFT)
+
         self.text = ScrolledText(self)
         self.text.pack(expand=True, fill=BOTH)
         self.formatter = ScrolledTextFormatter(self.text)
@@ -37,3 +48,11 @@ class UnjabberTk(Tk):
             day, hour, name = message.after(previous)
             self.formatter.show(previous, day, hour, name, message.what)
             previous = message
+
+    def narrow_who(self):
+        menu = self.who_menu['menu']
+        menu.delete(0, END)
+        like = self.who_narrow_var.get() or None
+        for name in self.queries.who(like):
+            menu.add_command(label=name,
+                             command=lambda x=name: self.who_var.set(x))
