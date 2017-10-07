@@ -13,7 +13,12 @@ class PayloadParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag == 'img':
-            self.stream.write(dict(attrs)['title'])
+            a = dict(attrs)
+            try:
+                imgtext = a['title']
+            except KeyError:
+                imgtext = '{}: {}'.format(a['alt'], a['src'])
+            self.stream.write(imgtext)
 
     def handle_startendtag(self, tag, attrs):
         if tag == 'br':
