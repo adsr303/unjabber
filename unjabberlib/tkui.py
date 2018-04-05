@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
+from tkinter.ttk import *
 
 from unjabberlib import formatters
 
@@ -31,15 +32,15 @@ class UnjabberTk(Tk):
         e = Entry(top_frame, textvariable=self.who_narrow_var)
         e.pack(side=LEFT)
 
-        self.who_var = StringVar(self)
-        self.who_var.trace_add('write', lambda *_: self.who())
-        self.who_menu = OptionMenu(top_frame, self.who_var,
-                                   *self.queries.who(None))
-        self.who_menu.pack(side=LEFT)
-
         self.text = ScrolledText(self)
         self.text.pack(expand=True, fill=BOTH)
         self.formatter = ScrolledTextFormatter(self.text)
+
+        self.who_var = StringVar(self)
+        self.who_var.trace_add('write', lambda *_: self.who())
+        self.who_menu = OptionMenu(top_frame, self.who_var, '',
+                                   *self.queries.who(None))
+        self.who_menu.pack(side=LEFT)
 
     def who(self):
         self.text.delete('1.0', END)
